@@ -1,4 +1,28 @@
 import { JSDOM } from "jsdom";
+async function crawlPage(currentURL: string) {
+  console.log(`actively crawling ${currentURL}`);
+  try {
+    const response = await fetch(currentURL);
+    if (response.status > 399) {
+      console.log(
+        `Error in fetch: status code ${response.status}, on page${currentURL}`
+      );
+      return;
+    }
+    const contentType = response.headers.get("content-type");
+    if (!contentType?.includes("text/html")) {
+      console.log(
+        `Error in fetch: content type ${contentType}, on page${currentURL}`
+      );
+      return;
+    }
+    console.log(await response.text());
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.log(`Error in fetch: ${errorMessage}, on page${currentURL}`);
+  }
+}
 function getURLsFromHTML(htmlBody: string, baseURL: string) {
   const urls: string[] = [];
   const dom = new JSDOM(htmlBody);
@@ -34,4 +58,4 @@ function normalizeURL(urlString: string) {
   return hostPath;
 }
 
-export { normalizeURL, getURLsFromHTML };
+export { normalizeURL, getURLsFromHTML, crawlPage };
